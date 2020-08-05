@@ -21,8 +21,15 @@
         </div>
         <!-- 作者 -->
         <div class="p-creator">
-          <img :src="detailInfo.creator.avatarUrl" class="avatar" />
-          <a href="javascript:;" class="name">{{ detailInfo.creator.nickname }}</a>
+          <router-link
+            :to="{ path: '/User', query: { uid: detailInfo.creator.userId } }"
+            ><img :src="detailInfo.creator.avatarUrl" class="avatar"
+          /></router-link>
+          <router-link
+            :to="{ path: '/User', query: { uid: detailInfo.creator.userId } }"
+            class="name"
+            >{{ detailInfo.creator.nickname }}</router-link
+          >
           <span class="time">{{ detailInfo.createTime }} 创建</span>
         </div>
         <!-- 操作 -->
@@ -46,13 +53,14 @@
         <!-- 标签 -->
         <div class="p-tag" v-if="detailInfo.tags.length > 0">
           <span>标签:</span>
-          <a href="javascript:;"
-          class="tag-info"
-          v-for="(tag, i) in detailInfo.tags" :key="i"
-          @click="toTag(tag)"
-          >{{
-            tag
-          }}</a>
+          <a
+            href="javascript:;"
+            class="tag-info"
+            v-for="(tag, i) in detailInfo.tags"
+            :key="i"
+            @click="toTag(tag)"
+            >{{ tag }}</a
+          >
         </div>
         <!-- 简介 -->
         <p class="p-describe">
@@ -172,7 +180,8 @@ export default {
           user: {
             nickname: '默认名',
             avatarUrl:
-              'https://p3.music.126.net/IVoJsdforU-g555F-DoO-Q==/109951164551436014.jpg'
+              'http://p1.music.126.net/KxePid7qTvt6V2iYVy-rYQ==/109951165050882728.jpg',
+            userId: 1
           }
         })
         // 评论数加一
@@ -225,7 +234,8 @@ export default {
           user: {
             nickname: '默认名',
             avatarUrl:
-              'https://p3.music.126.net/IVoJsdforU-g555F-DoO-Q==/109951164551436014.jpg'
+              'http://p1.music.126.net/KxePid7qTvt6V2iYVy-rYQ==/109951165050882728.jpg',
+            userId: 1
           }
         })
         // 评论数加一
@@ -246,8 +256,15 @@ export default {
         })
       }
     },
-    toTag(v) {
-      this.$router.push('/Discover/SongList')
+    toTag(tag) {
+      api.getTag(tag).then(val => {
+        let data = val.data.playlists
+        data.forEach(item => {
+          item.playCount = utils.countToString(item.playCount)
+        })
+        sessionStorage.setItem(tag, JSON.stringify(data))
+        this.$router.push('/Discover/SongList')
+      })
     }
   }
 }
@@ -440,6 +457,7 @@ export default {
           // 普通评论
           .hd-content {
             line-height: 28px;
+            width: 80%;
           }
           .hd-info {
             display: flex;
@@ -462,17 +480,21 @@ export default {
           }
           // 回复评论
           .hd-reply {
-            .hdr-nickname {
-              color: #31c27c;
-            }
-            .hdr-subcomment {
-              line-height: 28px;
+            .hdr-content {
+              width: 80%;
+              .hdr-nickname {
+                color: #31c27c;
+              }
+              .hdr-subcomment {
+                line-height: 28px;
+              }
             }
             .hdr-history {
               border-left: 1px #999 solid;
               margin: 5px 0 4px 12px;
               padding: 0 0 0 10px;
               color: #999;
+              width: 80%;
             }
           }
           // @回复
