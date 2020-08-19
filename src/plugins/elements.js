@@ -11,7 +11,23 @@ import {
   MenuItem,
   MenuItemGroup,
   Carousel,
-  CarouselItem
+  CarouselItem,
+  Scrollbar,
+  Tag,
+  Pagination,
+  Slider,
+  Image,
+  Table,
+  TableColumn,
+  Input,
+  Notification,
+  MessageBox,
+  Autocomplete,
+  Avatar,
+  Popover,
+  Tabs,
+  TabPane,
+  Loading
 } from 'element-ui'
 
 Vue.use(Container)
@@ -26,3 +42,23 @@ Vue.use(MenuItem)
 Vue.use(MenuItemGroup)
 Vue.use(Carousel)
 Vue.use(CarouselItem)
+Vue.use(Scrollbar)
+Vue.use(Tag)
+Vue.use(Pagination)
+Vue.use(Slider)
+Vue.use(Image)
+Vue.use(Table)
+Vue.use(TableColumn)
+Vue.use(Input)
+Vue.use(Header)
+Vue.use(Autocomplete)
+Vue.use(Avatar)
+Vue.use(Popover)
+Vue.use(Tabs)
+Vue.use(TabPane)
+Vue.use(Loading.directive)
+Vue.prototype.$msgbox = MessageBox
+Vue.prototype.$alert = MessageBox.alert
+Vue.prototype.$confirm = MessageBox.confirm
+Vue.prototype.$prompt = MessageBox.prompt
+Vue.prototype.$notify = Notification
