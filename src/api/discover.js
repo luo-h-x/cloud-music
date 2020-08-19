@@ -14,8 +14,8 @@ const api = {
     return axios.get('/top/playlist?limit=32')
   },
   // 标签歌单
-  getTag (keyword) {
-    return axios.get(`/top/playlist?limit=32&cat=${keyword}`)
+  getTag (limit, keyword) {
+    return axios.get(`/top/playlist?limit=${32 * limit}&cat=${keyword}`)
   },
   // 歌单详情
   getDetail (id) {
@@ -53,6 +53,10 @@ const api = {
   getSong (id) {
     return axios.get(`/song/detail?ids=${id}`)
   },
+  // 歌曲url
+  getSongU(ids) {
+    return axios.get(`/song/url?id=${ids}`)
+  },
   // 歌曲歌词
   getLyric(id) {
     return axios.get(`/lyric?id=${id}`)
@@ -64,6 +68,34 @@ const api = {
   // 热搜榜
   getSearchHot() {
     return axios.get('/search/hot/detail')
+  },
+  // 搜索建议
+  getSearchS(keyword) {
+    return axios.get(`/search/suggest?keywords=${keyword}`)
+  },
+  // 搜索
+  getSearch(keywords, type) {
+    return axios.get(`/search?keywords=${keywords}&type=${type}`)
+  },
+  // 专辑
+  getAlbum(id) {
+    return axios.get(`/album?id=${id}`)
+  },
+  // 专辑评论
+  getAlbumC(id) {
+    return axios.get(`/comment/album?id=${id}`)
+  },
+  // 新歌速递
+  getSongN(type) {
+    return axios.get(`/top/song?type=${type}`)
+  },
+  // 所有榜单
+  getRankingA() {
+    return axios.get('/toplist')
+  },
+  // 歌手列表
+  getSingerL(type = -1, area = -1, initial = -1) {
+    return axios.get(`/artist/list?type=${type}&area=${area}&initial=${initial}`)
   }
 }
 
