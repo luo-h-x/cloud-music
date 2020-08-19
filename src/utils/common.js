@@ -25,6 +25,16 @@ const utils = {
       s = s.toString()
     }
     return `${min}:${s}`
+  },
+  // 防抖
+  debounce(fn, delay) {
+    let timer
+    return function(...args) {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        fn(...args)
+      }, delay)
+    }
   }
 }
 
