@@ -1,6 +1,12 @@
 <template>
   <div class="appMain">
-    <router-view/>
+    <keep-alive>
+      <router-view v-if="this.$route.meta.keepAlive" :key="$route.fullPath" ></router-view>
+    </keep-alive>
+    <router-view v-if="!this.$route.meta.keepAlive" :key="$route.fullPath" ></router-view>
+    <!-- <keep-alive>
+      <router-view :key="$route.fullPath"></router-view>
+    </keep-alive> -->
   </div>
 </template>
 
