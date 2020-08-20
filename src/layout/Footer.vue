@@ -1,59 +1,170 @@
 <template>
   <div class="footer-page">
-    <div class="player">
-      <a href="javascript:;" class="btn-prev" title="alt+←"></a>
-      <a href="javascript:;" class="btn-play btn-pause " title="[空格]"></a>
-      <a href="javascript:;" class="btn-next" title="alt+→"></a>
+    <audio
+      v-if="songList.length > 0"
+      :src="songList[currentIndex].url"
+      autoplay
+      ref="audio"
+      @timeupdate="audioTimeUpdate"
+      @ended="ended"
+      @playing="playing"
+      @play="play"
+      @error="error"
+    ></audio>
+    <!-- 歌曲 -->
+    <div v-if="songList.length > 0" class="player-song">
+      <router-link
+        :to="{ path: '/Song', query: { id: songList[currentIndex].id } }"
+        ><img :src="songList[currentIndex].al.picUrl" class="ps-pic"
+      /></router-link>
+      <div class="ps-creator">
+        <router-link
+          class="psc-tit"
+          :to="{ path: '/Song', query: { id: songList[currentIndex].id } }"
+          >{{ songList[currentIndex].name }}</router-link
+        >
+        <router-link
+          :to="{
+            path: '/Singer',
+            query: { id: songList[currentIndex].ar[0].id }
+          }"
+          class="psc-name"
+          >{{ songList[currentIndex].ar[0].name }}</router-link
+        >
+      </div>
     </div>
+    <!-- 播放暂停 -->
+    <div class="player">
+      <a @click="prev" href="javascript:;" class="btn-prev" title="alt+←"></a>
+      <a
+        @click="toggle"
+        href="javascript:;"
+        :class="{ 'btn-play': isPlay, 'btn-pause': !isPlay }"
+        title="[空格]"
+      ></a>
+      <a @click="next" href="javascript:;" class="btn-next" title="alt+→"></a>
+    </div>
+    <!-- 进度条 -->
     <div class="player-music">
       <span class="player-music-start">{{ start }}</span>
-      <!-- <el-progress :percentage="30" :show-text="false"></el-progress> -->
-      <el-slider v-model="val" :format-tooltip="formatTooltip"></el-slider>
-      <span class="player-music-end"> 03:18</span>
+      <el-slider
+        @input="autoCurrentTime"
+        @change="changeCurrentTime"
+        :step="step"
+        :show-tooltip="false"
+        v-model="currentTime"
+      ></el-slider>
+      <span class="player-music-end"> {{ duration }}</span>
     </div>
+    <!-- 调节音量 -->
     <div class="player-voice">
       <a class="btn-voice" href="javascript:;" title="关闭声音[M]"></a>
-      <!-- <el-progress :percentage="30" :show-text="false"></el-progress> -->
-      <el-slider v-model="val2"></el-slider>
+      <el-slider @input="changVolum" :value="v"></el-slider>
     </div>
     <a href="javascript:;" class="btn-like" title="喜欢[V]"></a>
     <a href="javascript:;" class="btn-down" title="下载[D]"></a>
-    <a
-      href="https://y.qq.com/n/yqq/song/0030BScq1b8mUu.html#comment_box"
-      class="btn-comment"
-      target="_blank"
-    ></a>
   </div>
 </template>
 
 <script>
+import utils from '../utils/common'
 export default {
-  data () {
+  data() {
     return {
-      val: 10,
-      val2: 40,
-      timer: 112730,
-      start: ''
+      currentTime: 0,
+      v: 30,
+      duration: '00:00',
+      start: '00:00',
+      isPlay: false,
+      step: 0.5,
+      autoTime: null
+    }
+  },
+  computed: {
+    playList() {
+      return this.$store.state.playList
+    },
+    currentIndex() {
+      return this.$store.state.currentIndex
+    },
+    songList() {
+      return this.$store.state.songList
     }
   },
   methods: {
-    formatTooltip (val) {
-      // 一个val为一个刻度
-      let a = this.timer * val
-      let min = parseInt(a / 6000000)
-      let s = parseInt((a / 100000) % 60)
-      if (min < 10) {
-        min = '0' + min.toString()
+    // 播放暂停
+    toggle() {
+      this.isPlay = !this.isPlay
+      if (this.isPlay) {
+        this.$refs.audio.pause()
       } else {
-        min = min.toString()
+        this.$refs.audio.play()
       }
-      if (s < 10) {
-        s = '0' + s.toString()
-      } else {
-        s = s.toString()
+    },
+    next() {
+      this.$store.commit('nextM')
+      if (this.$route.path === '/Song') {
+        this.$router.push({
+          path: '/Song',
+          query: { id: this.songList[this.currentIndex].id }
+        })
       }
-      this.start = `${min}:${s}`
-      return `${min}:${s}`
+    },
+    prev() {
+      this.$store.commit('prevM')
+      if (this.$route.path === '/Song') {
+        this.$router.push({
+          path: '/Song',
+          query: { id: this.songList[this.currentIndex].id }
+        })
+      }
+    },
+    // 播放中触发
+    audioTimeUpdate() {
+      this.$store.commit('autoLyricM', this.start)
+      // 进度条自动滑动
+      this.currentTime = this.$refs.audio.currentTime.toFixed() * this.step
+    },
+    // 播放时触发
+    play() {
+      // 步长
+      this.step = parseFloat((100 / this.$refs.audio.duration).toFixed(1))
+      // 音量
+      this.$refs.audio.volume = this.v / 100
+      this.duration = utils.formatDay(this.$refs.audio.duration * 1000)
+    },
+    // 播放完时触发
+    ended() {
+      this.$refs.audio.play()
+      // this.isPlay = true
+    },
+    // 事件在音频/视频(audio/video)因缓冲而暂停或停止后已就绪时触发
+    playing() {
+      this.isPlay = false
+    },
+    // 调节音量
+    changVolum(val) {
+      if (this.$refs.audio) {
+        this.$refs.audio.volume = val / 100
+        this.v = val
+      }
+    },
+    // 调节时长
+    changeCurrentTime(val) {
+      this.$refs.audio.currentTime = (this.$refs.audio.duration * val) / 100
+    },
+    autoCurrentTime(val) {
+      this.start = utils.formatDay((val / this.step) * 1000)
+    },
+    error() {
+      this.$notify({
+        title: 'error',
+        message: '亲爱的,出错了',
+        type: 'danger',
+        duration: 2000,
+        position: 'top-left'
+      })
+      console.log('出错了')
     }
   }
 }
@@ -61,9 +172,43 @@ export default {
 
 <style lang="scss" scoped>
 .footer-page {
+  width: 100%;
   display: flex;
   align-items: center;
   height: 40px;
+  // 歌曲
+  .player-song {
+    width: 160px;
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    .ps-pic {
+      width: 40px;
+    }
+    .ps-creator {
+      margin-left: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      .psc-tit {
+        font-size: 14px;
+        color: #fff;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 110px;
+      }
+      .psc-name {
+        font-size: 14px;
+        color: #999;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 110px;
+      }
+    }
+  }
+  // 播放暂停
   .player {
     width: 200px;
     display: flex;
@@ -84,6 +229,10 @@ export default {
       background-position: 0 0;
     }
     .btn-pause {
+      display: block;
+      width: 21px;
+      height: 29px;
+      background-image: url(../assets/player.png);
       background-position: -30px 0;
     }
     .btn-next {
@@ -97,8 +246,9 @@ export default {
       font: 0/0 a;
     }
   }
+  // 进度条
   .player-music {
-    margin: 0 50px;
+    margin: 0 30px;
     display: flex;
     width: 400px;
     .el-slider {
@@ -117,6 +267,7 @@ export default {
       font-size: 13px;
     }
   }
+  // 调节音量
   .player-voice {
     width: 100px;
     display: flex;
@@ -127,6 +278,7 @@ export default {
       height: 21px;
       background-image: url(../assets/player.png);
       background-position: 0 -144px;
+      margin-right: 10px;
     }
     .el-slider {
       flex: 1;
