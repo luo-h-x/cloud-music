@@ -1,6 +1,7 @@
 <template>
   <div class="footer-page">
     <audio
+      class="audio"
       v-if="songList.length > 0"
       :src="songList[currentIndex].url"
       autoplay
@@ -9,13 +10,14 @@
       @ended="ended"
       @playing="playing"
       @play="play"
+      @pause="pause"
       @error="error"
     ></audio>
     <!-- 歌曲 -->
     <div v-if="songList.length > 0" class="player-song">
       <router-link
         :to="{ path: '/Song', query: { id: songList[currentIndex].id } }"
-        ><img :src="songList[currentIndex].al.picUrl" class="ps-pic"
+        ><img :src="songList[currentIndex].al.picUrl + '?param=100y100'" class="ps-pic"
       /></router-link>
       <div class="ps-creator">
         <router-link
@@ -35,14 +37,30 @@
     </div>
     <!-- 播放暂停 -->
     <div class="player">
-      <a @click="prev" href="javascript:;" class="btn-prev" title="alt+←"></a>
+      <a @click="prev" href="javascript:;" class="btn-prev" title="上一首">
+        <img src="../assets/prev.svg" alt="" />
+      </a>
       <a
+        v-if="!isPlay"
         @click="toggle"
         href="javascript:;"
-        :class="{ 'btn-play': isPlay, 'btn-pause': !isPlay }"
-        title="[空格]"
-      ></a>
-      <a @click="next" href="javascript:;" class="btn-next" title="alt+→"></a>
+        class="btn-play"
+        title="暂停"
+      >
+        <img src="../assets/playM.svg" alt="" />
+      </a>
+      <a
+        v-else
+        @click="toggle"
+        href="javascript:;"
+        class="btn-pause"
+        title="播放"
+      >
+        <img src="../assets/pauseM.svg" alt="" />
+      </a>
+      <a @click="next" href="javascript:;" class="btn-next" title="下一首">
+        <img src="../assets/next.svg" alt="" />
+      </a>
     </div>
     <!-- 进度条 -->
     <div class="player-music">
@@ -58,11 +76,13 @@
     </div>
     <!-- 调节音量 -->
     <div class="player-voice">
-      <a class="btn-voice" href="javascript:;" title="关闭声音[M]"></a>
+      <a href="javascript:;" title="关闭声音[M]">
+        <img class="btn-voice" src="../assets/volume.svg" alt="" />
+      </a>
       <el-slider @input="changVolum" :value="v"></el-slider>
     </div>
-    <a href="javascript:;" class="btn-like" title="喜欢[V]"></a>
-    <a href="javascript:;" class="btn-down" title="下载[D]"></a>
+    <!-- <a href="javascript:;" class="btn-like" title="喜欢[V]"></a>
+    <a href="javascript:;" class="btn-down" title="下载[D]"></a> -->
   </div>
 </template>
 
@@ -71,13 +91,13 @@ import utils from '../utils/common'
 export default {
   data() {
     return {
-      currentTime: 0,
-      v: 30,
-      duration: '00:00',
-      start: '00:00',
-      isPlay: false,
-      step: 0.5,
-      autoTime: null
+      currentTime: 0, // 进度条
+      v: 30, // 音量
+      duration: '00:00', // 持续时间
+      start: '00:00', // 当前时间
+      isPlay: false, // 播放暂停
+      step: 0.5, // 进度条步长
+      timer: null // 定时器
     }
   },
   computed: {
@@ -94,8 +114,8 @@ export default {
   methods: {
     // 播放暂停
     toggle() {
-      this.isPlay = !this.isPlay
-      if (this.isPlay) {
+      // this.isPlay = !this.isPlay
+      if (!this.isPlay) {
         this.$refs.audio.pause()
       } else {
         this.$refs.audio.play()
@@ -121,17 +141,31 @@ export default {
     },
     // 播放中触发
     audioTimeUpdate() {
-      this.$store.commit('autoLyricM', this.start)
+      this.$store.commit('autoLyricM', this.$refs.audio.currentTime)
       // 进度条自动滑动
-      this.currentTime = this.$refs.audio.currentTime.toFixed() * this.step
+      if (this.timer) return
+      this.timer = setTimeout(() => {
+        this.currentTime =
+          (this.$refs.audio.currentTime / this.$refs.audio.duration) * 100
+        this.timer = null
+      }, 1000)
     },
     // 播放时触发
     play() {
+      this.isPlay = false
       // 步长
       this.step = parseFloat((100 / this.$refs.audio.duration).toFixed(1))
       // 音量
       this.$refs.audio.volume = this.v / 100
       this.duration = utils.formatDay(this.$refs.audio.duration * 1000)
+      // 暂停mv
+      let video = document.getElementsByTagName('video')[0]
+      if (video) {
+        video.pause()
+      }
+    },
+    pause() {
+      this.isPlay = true
     },
     // 播放完时触发
     ended() {
@@ -151,10 +185,12 @@ export default {
     },
     // 调节时长
     changeCurrentTime(val) {
-      this.$refs.audio.currentTime = (this.$refs.audio.duration * val) / 100
+      this.$refs.audio.currentTime = (this.$refs.audio.duration / 100) * val
     },
     autoCurrentTime(val) {
-      this.start = utils.formatDay((val / this.step) * 1000)
+      if (this.$refs.audio) {
+        this.start = utils.formatDay(this.$refs.audio.currentTime * 1000)
+      }
     },
     error() {
       this.$notify({
@@ -192,7 +228,6 @@ export default {
       justify-content: center;
       .psc-tit {
         font-size: 14px;
-        color: #fff;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -216,31 +251,31 @@ export default {
     align-items: center;
     .btn-prev {
       display: block;
-      width: 19px;
-      height: 20px;
-      background-image: url(../assets/player.png);
-      background-position: 0 -30px;
+      // width: 19px;
+      // height: 20px;
+      // background-image: url(../assets/player.png);
+      // background-position: 0 -30px;
     }
     .btn-play {
       display: block;
-      width: 21px;
-      height: 29px;
-      background-image: url(../assets/player.png);
-      background-position: 0 0;
+      // width: 21px;
+      // height: 29px;
+      // background-image: url(../assets/player.png);
+      // background-position: 0 0;
     }
     .btn-pause {
       display: block;
-      width: 21px;
-      height: 29px;
-      background-image: url(../assets/player.png);
-      background-position: -30px 0;
+      // width: 21px;
+      // height: 29px;
+      // background-image: url(../assets/player.png);
+      // background-position: -30px 0;
     }
     .btn-next {
       display: block;
-      width: 19px;
-      height: 20px;
-      background-image: url(../assets/player.png);
-      background-position: 0 -52px;
+      // width: 19px;
+      // height: 20px;
+      // background-image: url(../assets/player.png);
+      // background-position: 0 -52px;
     }
     .icon_txt {
       font: 0/0 a;
@@ -255,13 +290,11 @@ export default {
       flex: 1;
     }
     .player-music-start {
-      color: #fff;
       line-height: 40px;
       margin: 0 10px;
       font-size: 13px;
     }
     .player-music-end {
-      color: #fff;
       line-height: 40px;
       margin: 0 5px;
       font-size: 13px;
@@ -275,9 +308,9 @@ export default {
     .btn-voice {
       display: block;
       width: 26px;
-      height: 21px;
-      background-image: url(../assets/player.png);
-      background-position: 0 -144px;
+      // height: 21px;
+      // background-image: url(../assets/player.png);
+      // background-position: 0 -144px;
       margin-right: 10px;
     }
     .el-slider {
