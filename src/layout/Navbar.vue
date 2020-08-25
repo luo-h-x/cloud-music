@@ -5,8 +5,8 @@
       <span>云音乐</span>
     </div>
     <!-- 前进返回 -->
-    <div class="nav-history" @click="back">
-      <div class="back">
+    <div class="nav-history">
+      <div class="back" @click="back">
         <img class="img" src="../assets/back.svg" alt="" />
       </div>
       <div class="go" @click="go">
@@ -33,7 +33,9 @@
               >
                 <span class="tit" @click="playSong(index)">{{ item.name }}</span
                 >-
-                <span class="tit" @click="playSong(index)">{{ item.artists[0].name }}</span>
+                <span class="tit" @click="playSong(index)">{{
+                  item.artists[0].name
+                }}</span>
               </li>
             </ul>
           </div>
@@ -182,7 +184,7 @@ export default {
       history.back()
     },
     go() {
-      history.forward()
+      window.history.forward()
     },
     // 播放歌曲
     playSong(index) {
