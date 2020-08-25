@@ -27,7 +27,8 @@ import {
   Popover,
   Tabs,
   TabPane,
-  Loading
+  Loading,
+  Backtop
 } from 'element-ui'
 
 Vue.use(Container)
@@ -56,6 +57,7 @@ Vue.use(Avatar)
 Vue.use(Popover)
 Vue.use(Tabs)
 Vue.use(TabPane)
+Vue.use(Backtop)
 Vue.use(Loading.directive)
 Vue.prototype.$msgbox = MessageBox
 Vue.prototype.$alert = MessageBox.alert
