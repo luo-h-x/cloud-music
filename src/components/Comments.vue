@@ -1,5 +1,11 @@
 <template>
-  <div class="comments-page">
+  <div
+    class="comments-page"
+    v-loading="loading"
+    element-loading-text="努力加载中"
+    element-loading-background="#fff"
+    ref="comments"
+  >
     <div class="c-top">
       <h2 class="c-title">评论</h2>
       <span class="c-count">共{{ comments.total }}条评论</span>
@@ -62,7 +68,9 @@
                 {{ item.content }}
               </p>
               <div class="hd-info">
-                <span class="hd-time" href="">{{ item.time }}</span>
+                <span class="hd-time" href="">{{
+                  utils.formatDate(item.time, 1)
+                }}</span>
                 <div class="hd-option">
                   <!-- <a href="">举报</a> -->
                   <a
@@ -113,7 +121,7 @@
     <!-- 最新评论 -->
     <div v-if="comments.comments">
       <div v-if="comments.comments == 0"></div>
-      <div class="latestcomments" v-else >
+      <div class="latestcomments" v-else>
         <h2 class="c-type">最新评论</h2>
         <ul class="h-list">
           <li
@@ -124,7 +132,7 @@
             <!-- 头像 -->
             <router-link
               :to="{ path: '/User', query: { uid: item.user.userId } }"
-              ><img class="h-avatar" :src="item.user.avatarUrl"
+              ><img class="h-avatar" :src="item.user.avatarUrl + '?param=60y60'"
             /></router-link>
             <!-- 详情 -->
             <div class="h-details">
@@ -154,7 +162,9 @@
                 {{ item.content }}
               </p>
               <div class="hd-info">
-                <span class="hd-time" href="">{{ item.time }}</span>
+                <span class="hd-time" href="">{{
+                  utils.formatDate(item.time, 1)
+                }}</span>
                 <div class="hd-option">
                   <!-- <a href="">举报</a> -->
                   <a
@@ -194,10 +204,12 @@
         </ul>
         <!-- 分页 -->
         <el-pagination
-          v-if="comments.comments.length > 19"
+          v-if="total > 20"
           background
           layout="prev, pager, next"
-          :total="100"
+          :total="total"
+          :page-size="20"
+          @current-change="currentChange"
         >
         </el-pagination>
         <!-- 加载完毕 -->
@@ -210,17 +222,39 @@
 </template>
 
 <script>
+import utils from '../utils/common'
 export default {
   data() {
     return {
-      replyc: -1,
-      textareaR: '',
-      textareaC: ''
+      loading: true,
+      utils: utils, // 工具
+      replyc: -1, // 控制回复样式
+      textareaR: '', // input回复
+      textareaC: '', // input评论
+      group: [
+        { type: 'music', name: '歌曲', path: '/Song' },
+        { type: 'mv', name: 'mv', path: '/Video/Detail' },
+        { type: 'playlist', name: '歌单', path: '/PlayList' },
+        { type: 'album', name: '专辑', path: '/Album/Comments' },
+        { type: 'dj', name: '电台', path: '/Song' },
+        { type: 'video', name: '视频', path: '/Video/Detail' }
+      ]
+    }
+  },
+  watch: {
+    comments: {
+      handler: function(val, oldval) {
+        this.loading = false
+      },
+      deep: true
     }
   },
   computed: {
     comments() {
       return this.$store.state.comments
+    },
+    total() {
+      return this.$store.state.total
     }
   },
   methods: {
@@ -240,6 +274,7 @@ export default {
     },
     // 回复
     toReply(item) {
+      console.log(item)
       this.replyc = -1
       this.$store.commit('toReplyCommentM', {
         item: item,
@@ -255,7 +290,33 @@ export default {
     // 显示回复
     showReply(index) {
       this.replyc = index
+    },
+    // 评论分页
+    currentChange(index) {
+      this.loading = true
+      // 滚动到评论顶部
+      this.$refs.comments.scrollIntoView({
+        block: 'start'
+      })
+      let result = {}
+      let item = this.group.find(item => {
+        return item.path === this.$route.path
+      })
+      result.type = item.type
+      result.id = this.$route.query.id
+      result.offset = index - 1
+      this.$store.dispatch('queryCommetsA', result)
     }
+  },
+  mounted() {
+    let result = {}
+    let item = this.group.find(item => {
+      return item.path === this.$route.path
+    })
+    result.type = item.type
+    result.id = this.$route.query.id
+    result.offset = 0
+    this.$store.dispatch('queryCommetsA', result)
   }
 }
 </script>
@@ -343,7 +404,7 @@ export default {
       flex-direction: column;
       margin-left: 20px;
       .hd-name {
-        color: #999;
+        color: #3a8ee6;
         line-height: 28px;
       }
       // 普通评论
@@ -387,6 +448,8 @@ export default {
           padding: 0 0 0 10px;
           color: #999;
           width: 80%;
+          background: #f5f7fa;
+          line-height: 26px;
         }
       }
       // @回复
