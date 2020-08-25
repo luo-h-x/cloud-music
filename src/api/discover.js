@@ -2,55 +2,66 @@ import axios from './axios'
 
 const api = {
   // 轮播图
-  getBanner () {
+  getBanner() {
     return axios.get('/banner')
   },
   // 推荐歌单
-  getList () {
+  getList() {
     return axios.get('/personalized?limit=10')
   },
   // 最新歌单
-  getNewList () {
+  getNewList() {
     return axios.get('/top/playlist?limit=32')
   },
   // 标签歌单
-  getTag (limit, keyword) {
+  getTag(limit, keyword) {
     return axios.get(`/top/playlist?limit=${32 * limit}&cat=${keyword}`)
   },
   // 歌单详情
-  getDetail (id) {
+  getDetail(id) {
     return axios.get(`/playlist/detail?id=${id}`)
   },
   // 歌单评论
-  getComments (id) {
+  getComments(id) {
     return axios.get(`/comment/playlist?id=${id}`)
   },
   // 推荐独家放送
-  getSole () {
+  getSole() {
     return axios.get('/personalized/privatecontent')
   },
   // 推荐最新音乐
-  getLatest () {
+  getLatest() {
     return axios.get('/personalized/newsong')
   },
   // 推荐mv
-  getMV () {
+  getMV() {
     return axios.get('/personalized/mv')
   },
+  // mv url
+  getUrlMv(id) {
+    return axios.get(`/mv/url?id=${id}`)
+  },
+  // mv信息
+  getMvD(id) {
+    return axios.get(`/mv/detail/info?mvid=${id}`)
+  },
+  getMvC(id) {
+    return axios.get(`/comment/mv?id=${id}`)
+  },
   // 推荐电台
-  getStation () {
+  getStation() {
     return axios.get('/personalized/djprogram')
   },
   // 用户信息
-  getUser (uid) {
+  getUser(uid) {
     return axios.get(`/user/detail?uid=${uid}`)
   },
   // 用户创建歌单
-  getUserList (uid) {
+  getUserList(uid) {
     return axios.get(`/user/playlist?uid=${uid}`)
   },
   // 歌曲详情
-  getSong (id) {
+  getSong(id) {
     return axios.get(`/song/detail?ids=${id}`)
   },
   // 歌曲url
@@ -62,7 +73,7 @@ const api = {
     return axios.get(`/lyric?id=${id}`)
   },
   // 歌曲评论
-  getSongC (id) {
+  getSongC(id) {
     return axios.get(`/comment/music?id=${id}`)
   },
   // 热搜榜
@@ -95,7 +106,13 @@ const api = {
   },
   // 歌手列表
   getSingerL(type = -1, area = -1, initial = -1) {
-    return axios.get(`/artist/list?type=${type}&area=${area}&initial=${initial}`)
+    return axios.get(
+      `/artist/list?type=${type}&area=${area}&initial=${initial}`
+    )
+  },
+  // 获取评论
+  getCommentsT(type, id, offset) {
+    return axios.get(`/comment/${type}?id=${id}&offset=${offset}`)
   }
 }
 
