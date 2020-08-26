@@ -1,19 +1,30 @@
 <template>
-  <ul class="singer-album">
-    <li
-      class="singer-album-item"
-      v-for="(item, index) in result.artists"
-      :key="index"
-    >
-      <img :src="item.img1v1Url" class="sa-pic" />
-      <router-link
-        :to="{ path: '/Singer', query: { id: item.id } }"
-        class="sa-title"
-        >{{ item.name }}</router-link
-      >
-      <!-- <a href="javascript:;" class="sa-title">{{ item.name }}</a> -->
-    </li>
-  </ul>
+  <div>
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <ul class="singer-album">
+        <li
+          class="singer-album-item"
+          v-for="(item, index) in result.artists"
+          :key="index"
+        >
+          <img @load="show" :src="item.img1v1Url + '?param=130y130'" class="sa-pic" />
+          <router-link
+            :to="{ path: '/Singer', query: { id: item.id } }"
+            class="sa-title"
+            >{{ item.name }}</router-link
+          >
+          <!-- <a href="javascript:;" class="sa-title">{{ item.name }}</a> -->
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -21,18 +32,36 @@ import api from '../../api/discover'
 export default {
   data() {
     return {
-      result: []
+      result: [],
+      loading: true,
+      count: 0
     }
   },
   mounted() {
     api.getSearch(this.$route.query.keyword, 100).then(val => {
       this.result = val.data.result
     })
+  },
+  methods: {
+    show() {
+      this.count++
+      if (this.count === this.result.artists.length) {
+        this.loading = false
+      }
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 200px);
+  position: absolute;
+}
 .singer-album {
   .singer-album-item {
     display: grid;

@@ -1,23 +1,38 @@
 <template>
-  <ul class="singer-album">
-    <li
-      class="singer-album-item"
-      v-for="(item, index) in album.albums"
-      :key="index"
-    >
-      <img :src="item.picUrl" class="sa-pic" />
-      <router-link
-        :to="{ path: '/Album', query: { id: item.id } }"
-        class="sa-title"
-        >{{ item.name }}</router-link
-      >
-      <router-link
-        :to="{ path: '/Singer', query: { id: item.artist.id } }"
-        class="sa-title"
-        >{{ item.artist.name }}</router-link
-      >
-    </li>
-  </ul>
+  <div>
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <ul class="singer-album">
+        <li
+          class="singer-album-item"
+          v-for="(item, index) in album.albums"
+          :key="index"
+        >
+          <img
+            @load="show"
+            :src="item.picUrl + '?param=130y130'"
+            class="sa-pic"
+          />
+          <router-link
+            :to="{ path: '/Album', query: { id: item.id } }"
+            class="sa-title"
+            >{{ item.name }}</router-link
+          >
+          <router-link
+            :to="{ path: '/Singer', query: { id: item.artist.id } }"
+            class="sa-title"
+            >{{ item.artist.name }}</router-link
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -25,18 +40,36 @@ import api from '../../api/discover'
 export default {
   data() {
     return {
-      album: []
+      album: [],
+      loading: true,
+      count: 0
     }
   },
   mounted() {
     api.getSearch(this.$route.query.keyword, 10).then(val => {
       this.album = val.data.result
     })
+  },
+  methods: {
+    show() {
+      this.count++
+      if (this.count >= this.album.albums.length) {
+        this.loading = false
+      }
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 200px);
+  position: absolute;
+}
 .singer-album {
   .singer-album-item {
     display: grid;

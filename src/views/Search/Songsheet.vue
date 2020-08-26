@@ -1,24 +1,35 @@
 <template>
-  <ul class="singer-album">
-    <li
-      class="singer-album-item"
-      v-for="(item, index) in result.playlists"
-      :key="index"
-    >
-      <img :src="item.coverImgUrl" class="sa-pic" />
-      <router-link
-        :to="{ path: '/PlayList', query: { id: item.id } }"
-        class="sa-title"
-        >{{ item.name }}</router-link
-      >
-      <span class="sa-count">{{ item.trackCount }}首</span>
-      <router-link
-        :to="{ path: '/User', query: { uid: item.creator.userId } }"
-        class="sa-title"
-        >by: {{ item.creator.nickname }}</router-link
-      >
-    </li>
-  </ul>
+  <div>
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <ul class="singer-album">
+        <li
+          class="singer-album-item"
+          v-for="(item, index) in result.playlists"
+          :key="index"
+        >
+          <img @load="show" :src="item.coverImgUrl + '?param=130y130'" class="sa-pic" />
+          <router-link
+            :to="{ path: '/PlayList', query: { id: item.id } }"
+            class="sa-title"
+            >{{ item.name }}</router-link
+          >
+          <span class="sa-count">{{ item.trackCount }}首</span>
+          <router-link
+            :to="{ path: '/User', query: { uid: item.creator.userId } }"
+            class="sa-title"
+            >by: {{ item.creator.nickname }}</router-link
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -26,7 +37,9 @@ import api from '../../api/discover'
 export default {
   data() {
     return {
-      result: []
+      result: [],
+      loading: true,
+      count: 0
     }
   },
   mounted() {
@@ -36,11 +49,27 @@ export default {
       //   item.publishTime = new Date(item.publishTime).toLocaleDateString()
       // })
     })
+  },
+  methods: {
+    show() {
+      this.count++
+      if (this.count === this.result.playlists.length) {
+        this.loading = false
+      }
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 200px);
+  position: absolute;
+}
 .singer-album {
   .singer-album-item {
     display: grid;
