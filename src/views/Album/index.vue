@@ -2,7 +2,7 @@
   <div class="album-page" v-if="album">
     <!-- 专辑信息 -->
     <div class="p-data">
-      <img :src="album.picUrl" class="data-photo" />
+      <img :src="album.picUrl + '?param=400y400'" class="data-photo" />
       <div class="p-content">
         <!-- 标题 -->
         <div class="p-main">
@@ -52,11 +52,18 @@
       <router-view />
     </div>
   </div>
+  <div
+    class="load"
+    v-loading="true"
+    element-loading-text="努力加载中"
+    element-loading-background="#fff"
+    v-else
+  ></div>
 </template>
 
 <script>
 import api from '../../api/discover'
-import util from '../../utils/common'
+import utils from '../../utils/common'
 export default {
   data() {
     return {
@@ -72,7 +79,7 @@ export default {
     // 获取歌单列表
     api.getAlbum(this.$route.query.id).then(val => {
       this.album = val.data.album
-      this.album.publishTime = util.formatDate(this.album.publishTime)
+      this.album.publishTime = utils.formatDate(this.album.publishTime)
     })
   },
   methods: {
@@ -84,6 +91,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.load {
+  width: 100%;
+  height: calc(100vh - 120px);
+  position: absolute;
+}
 .album-page {
   // 歌单信息
   .p-data {
