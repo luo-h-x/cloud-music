@@ -1,8 +1,18 @@
 <template>
   <div class="user-page" v-if="userInfo">
     <div class="user">
-      <!-- 头像 -->
-      <img :src="userInfo.profile.avatarUrl" class="avatar-pic" />
+      <div class="u-right">
+        <!-- 头像 -->
+        <img :src="userInfo.profile.avatarUrl" class="avatar-pic" />
+        <router-link
+          v-if="userInfo.profile.artistId"
+          :to="{ path: '/Singer', query: { id: userInfo.profile.artistId } }"
+          class="u-singer"
+        >
+          Ta的歌手页 >
+        </router-link>
+      </div>
+
       <!-- 右侧内容 -->
       <div class="u-content">
         <!-- 标题 -->
@@ -86,7 +96,7 @@
           v-for="(item, index) in userList"
           :key="index"
         >
-          <img :src="item.coverImgUrl" class="uc-pic" />
+          <img :src="item.coverImgUrl + '?param=130y130'" class="uc-pic" />
           <router-link
             :to="{ path: '/PlayList', query: { id: item.id } }"
             class="uc-title"
@@ -108,6 +118,13 @@
       </ul>
     </div>
   </div>
+  <div
+    class="load"
+    v-loading="true"
+    element-loading-text="努力加载中"
+    element-loading-background="#fff"
+    v-else
+  ></div>
 </template>
 
 <script>
@@ -133,16 +150,39 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.load {
+  width: 100%;
+  height: calc(100vh - 120px);
+  position: absolute;
+}
 .user-page {
   .user {
     display: flex;
     margin-bottom: 50px;
   }
-  // 头像
-  .avatar-pic {
-    width: 250px;
-    margin-right: 25px;
+  .u-right {
+    position: relative;
+    // 头像
+    .avatar-pic {
+      width: 250px;
+      height: 250px;
+      margin-right: 25px;
+    }
+    .u-singer {
+      width: 100px;
+      position: absolute;
+      left: 50%;
+      bottom: 50px;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      line-height: 28px;
+      font-size: 13px;
+      border-radius: 10px;
+      text-align: center;
+    }
   }
+
   // 主要信息
   .u-content {
     flex: 1;
@@ -153,7 +193,6 @@ export default {
       display: flex;
       justify-content: space-between;
       border-bottom: 1px #ccc solid;
-      // nickname，sex,level
       .ui-personal {
         display: flex;
         align-items: center;
@@ -188,7 +227,7 @@ export default {
           display: flex;
           justify-content: center;
           align-items: center;
-          min-width: 100px;
+          min-width: 80px;
           border: 1px solid #c9c9c9;
           font-size: 14px;
           border-radius: 2px;
