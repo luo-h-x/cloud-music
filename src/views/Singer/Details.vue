@@ -7,7 +7,6 @@
         {{ deatails.briefDesc }}
       </p>
     </div>
-
     <div class="singer-introduction" v-if="deatails.introduction.length > 0">
       <div
         class="si-info"
