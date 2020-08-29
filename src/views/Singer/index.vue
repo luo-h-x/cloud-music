@@ -4,12 +4,9 @@
     <div class="singer">
       <!-- 右 -->
       <div class="singer-content">
-        <img
-          :src="singer.img1v1Url"
-          class="singer-pic"
-        />
+        <img :src="singer.img1v1Url + '?param=400y400'" class="singer-pic" />
         <router-link
-            v-if="singer.accountId"
+          v-if="singer.accountId"
           :to="{ path: '/User', query: { uid: singer.accountId } }"
           class="singer-user"
         >
@@ -21,15 +18,15 @@
       <div class="singer-relevant">
         <div class="sr-title">
           <el-tag type="danger">歌手</el-tag>
-          <h2 class="sr-name">{{singer.name}}</h2>
+          <h2 class="sr-name">{{ singer.name }}</h2>
           <a href="javascript:;" class="btn-collect"
-            ><img src="/img/like.cccf4193.svg" class="img-like" />收藏</a
+            ><img src="../../assets/like.svg" class="img-like" />收藏</a
           >
         </div>
         <div class="sr-count">
-          <span class="count">单曲数: {{singer.musicSize}}</span>
-          <span class="count">专辑数: {{singer.albumSize}}</span>
-          <span class="count">MV数: {{singer.mvSize}}</span>
+          <span class="count">单曲数: {{ singer.musicSize }}</span>
+          <span class="count">专辑数: {{ singer.albumSize }}</span>
+          <span class="count">MV数: {{ singer.mvSize }}</span>
         </div>
       </div>
     </div>
@@ -47,9 +44,16 @@
     </div>
     <!-- 更多信息 -->
     <div class="singer-more">
-      <router-view/>
+      <router-view />
     </div>
   </div>
+  <div
+    class="load"
+    v-loading="true"
+    element-loading-text="努力加载中"
+    element-loading-background="#fff"
+    v-else
+  ></div>
 </template>
 
 <script>
@@ -66,7 +70,7 @@ export default {
       singer: null
     }
   },
-  mounted () {
+  mounted() {
     api.getSinger(this.$route.query.id).then(val => {
       this.singer = val.data.artist
     })
@@ -80,6 +84,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.load {
+  width: 100%;
+  height: calc(100vh - 120px);
+  position: absolute;
+}
 .singer-page {
   // 歌手
   .singer {
@@ -88,6 +97,7 @@ export default {
       position: relative;
       .singer-pic {
         width: 250px;
+        height: 250px;
         margin: 0 25px;
       }
       .singer-user {
