@@ -1,24 +1,38 @@
 <template>
-  <div class="singer-mv-page">
-    <ul class="s-mv">
-      <li class="s-mv-item" v-for="(item, index) in singerMv.mvs" :key="index">
-        <div class="sc-content">
-          <img class="sc-img " :src="item.imgurl16v9" />
-          <!-- 播放数 -->
-          <div class="sc-info">
-            <img class="sc-headset" src="../../assets/headset.svg" alt="" />
-            <!-- <span class="sc-count">{{ item.playCount }}</span> -->
-            <span class="sc-count">{{item.playCount}}</span>
+  <div class="singer-mv-page" v-if="singerMv.mvs">
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <ul class="s-mv" v-if="singerMv.mvs.length > 0">
+        <li
+          class="s-mv-item"
+          v-for="(item, index) in singerMv.mvs"
+          :key="index"
+        >
+          <div class="sc-content">
+            <img @load="show" class="sc-img " :src="item.imgurl16v9 + '?param=555y340'" />
+            <!-- 播放数 -->
+            <div class="sc-info">
+              <img class="sc-headset" src="../../assets/headset.svg" alt="" />
+              <!-- <span class="sc-count">{{ item.playCount }}</span> -->
+              <span class="sc-count">{{ item.playCount }}</span>
+            </div>
+            <!-- 时长 -->
+            <div class="sc-duration">
+              <span>{{ item.duration }}</span>
+            </div>
           </div>
-          <!-- 时长 -->
-          <div class="sc-duration">
-            <span>{{item.duration}}</span>
-          </div>
-        </div>
-        <!-- <a href="javascript:;" class="sc-title">{{ item.name }}</a> -->
-        <a href="javascript:;" class="sc-title">{{item.name}}</a>
-      </li>
-    </ul>
+          <!-- <a href="javascript:;" class="sc-title">{{ item.name }}</a> -->
+          <a href="javascript:;" class="sc-title">{{ item.name }}</a>
+        </li>
+      </ul>
+      <span v-else>没有相关mv</span>
+    </div>
   </div>
 </template>
 
@@ -26,24 +40,43 @@
 import api from '../../api/singer'
 import util from '../../utils/common'
 export default {
-  data () {
+  data() {
     return {
-      singerMv: []
+      singerMv: [],
+      loading: true,
+      count: 0
     }
   },
   mounted() {
     api.getSingerMV(this.$route.query.id).then(val => {
       this.singerMv = val.data
+      if (this.singerMv.mvs.length === 0) this.loading = false
       this.singerMv.mvs.forEach(item => {
         item.playCount = util.countToString(item.playCount)
         item.duration = util.formatDay(item.duration)
       })
     })
+  },
+  methods: {
+    show() {
+      this.count++
+      if (this.count === this.singerMv.mvs.length) {
+        this.loading = false
+      }
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 435px);
+  position: absolute;
+}
 .s-mv {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -60,6 +93,8 @@ export default {
       .sc-img {
         display: block;
         width: 100%;
+        height: 128px;
+        object-fit: cover;
       }
       // 播放数
       .sc-info {
