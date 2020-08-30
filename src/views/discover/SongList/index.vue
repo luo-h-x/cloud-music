@@ -1,47 +1,67 @@
 <template>
-  <div class="song-page">
-    <!-- 标签 -->
-    <el-tag
-      v-for="tag in tags"
-      :key="tag.name"
-      :color="tag.color"
-      @click="tagChange(tag.name)"
-    >
-      {{ tag.name }}
-    </el-tag>
-    <!-- 歌单列表 -->
-    <ul class="s-list">
-      <li
-        class="s-list-item"
-        v-for="(item, index) in newList"
-        :key="index"
-        @click="toPlayList(item.id)"
+  <div class="song-page" ref="songs">
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <!-- 标签 -->
+      <el-tag color="#ef2424">热门标签:</el-tag>
+      <el-tag
+        v-for="tag in tags"
+        :key="tag.name"
+        :color="tag.color"
+        @click="tagChange(tag.name)"
       >
-        <div class="s-content">
-          <div class="sc-img">
-            <img class="sc-main sc-restore" :src="item.coverImgUrl" />
-            <!-- 播放数 -->
-            <div class="sc-info">
+        {{ tag.name }}
+      </el-tag>
+      <!-- 歌单列表 -->
+      <ul class="s-list">
+        <li
+          class="s-list-item"
+          v-for="(item, index) in newList"
+          :key="index"
+          @click="toPlayList(item.id)"
+        >
+          <div class="s-content">
+            <div class="sc-img">
               <img
-                class="sc-headset"
-                src="../../../assets/headset.svg"
-                alt=""
+                @load="show"
+                class="sc-main sc-restore"
+                :src="item.coverImgUrl + '?param=400y400'"
               />
-              <span class="sc-count">{{ item.playCount }}</span>
+              <!-- 播放数 -->
+              <div class="sc-info">
+                <img
+                  class="sc-headset"
+                  src="../../../assets/headset.svg"
+                  alt=""
+                />
+                <span class="sc-count">{{ item.playCount }}</span>
+              </div>
+              <!-- 歌单作者 -->
+              <div class="sc-describe">
+                <img class="sc-d-img" src="../../../assets/person.svg" alt="" />
+                <span class="sc-d-title">{{ item.creator.nickname }}</span>
+              </div>
             </div>
-            <!-- 歌单作者 -->
-            <div class="sc-describe">
-              <img class="sc-d-img" src="../../../assets/person.svg" alt="" />
-              <span class="sc-d-title">{{ item.creator.nickname }}</span>
-            </div>
+            <a href="javascript:;" class="sc-title">{{ item.name }}</a>
           </div>
-          <a href="javascript:;" class="sc-title" >{{ item.name }}</a>
-        </div>
-      </li>
-    </ul>
-    <!-- 分页 -->
-    <el-pagination background layout="prev, pager, next" :total="90">
-    </el-pagination>
+        </li>
+      </ul>
+      <!-- 分页 -->
+      <el-pagination
+        @current-change="currentChange"
+        background
+        layout="prev, pager, next"
+        :page-size="32"
+        :total="total"
+      >
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -52,7 +72,6 @@ export default {
   data() {
     return {
       tags: [
-        { name: '热门表签：', color: '#ef2424' },
         { name: '华语', color: '#409eff' },
         { name: '流行', color: '#88ee86' },
         { name: '摇滚', color: '#2e2be8' },
@@ -63,49 +82,76 @@ export default {
         { name: '综艺', color: '#f4de8e' },
         { name: '影视原声', color: '#da56d6' }
       ],
-      newList: null
+      total: 100,
+      newList: null,
+      loading: true,
+      count: 0
     }
   },
   methods: {
     // 切换标签
-    tagChange(keyword) {
-      this.newList = JSON.parse(sessionStorage.getItem(keyword))
+    tagChange(type) {
+      this.$router.push({
+        path: '/Discover/SongList',
+        query: { cat: type, limit: 32 }
+      })
     },
     // 跳转歌单详情页
     toPlayList(id) {
       this.$router.push({ path: '/PlayList', query: { id: id } })
+    },
+    show() {
+      this.count++
+      if (this.count >= this.newList.length) {
+        this.count = 0
+        this.loading = false
+      }
+    },
+    currentChange(index) {
+      this.loading = true
+      // 滚动到歌单顶部
+      this.$refs.songs.scrollIntoView({
+        block: 'start'
+      })
+      api.getTag(index, this.$route.query.cat || '全部').then(val => {
+        let c = 32 * (index - 1)
+        this.newList = val.data.playlists.slice(c)
+        this.newList.forEach(item => {
+          item.playCount = utils.countToString(item.playCount)
+        })
+      })
     }
   },
   mounted() {
-    if (sessionStorage.getItem('newList')) {
-      // 读取sessionStorage数据
-      this.newList = JSON.parse(sessionStorage.getItem('newList'))
+    // 获取歌单列表
+    if (this.$route.query.cat) {
+      api.getTag(1, this.$route.query.cat).then(val => {
+        this.newList = val.data.playlists
+        this.newList.forEach(item => {
+          item.playCount = utils.countToString(item.playCount)
+        })
+      })
     } else {
-      // 获取歌单列表
       api.getNewList().then(val => {
         this.newList = val.data.playlists
         this.newList.forEach(item => {
           item.playCount = utils.countToString(item.playCount)
         })
-        // 设置sessionStorage数据
-        sessionStorage.setItem('newList', JSON.stringify(this.newList))
       })
     }
-    // 标签数据
-    this.tags.forEach(item => {
-      api.getTag(item.name).then(val => {
-        let data = val.data.playlists
-        data.forEach(item => {
-          item.playCount = utils.countToString(item.playCount)
-        })
-        sessionStorage.setItem(item.name, JSON.stringify(data))
-      })
-    })
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 120px);
+  position: absolute;
+}
 // 推荐歌单
 .song-page {
   // 标签
