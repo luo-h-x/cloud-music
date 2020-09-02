@@ -1,11 +1,20 @@
 <template>
   <div class="personality-page">
-    <Banner/>
-    <recommended-song/>
-    <sole/>
-    <latest-music/>
-    <music-video/>
-    <radio-station/>
+    <div
+      class="load"
+      v-loading="loading"
+      element-loading-text="努力加载中"
+      element-loading-background="#fff"
+      v-if="loading"
+    ></div>
+    <div :class="{ hide: loading }">
+      <Banner />
+      <recommended-song />
+      <sole />
+      <latest-music />
+      <music-video />
+      <radio-station />
+    </div>
   </div>
 </template>
 
@@ -24,11 +33,27 @@ export default {
     LatestMusic,
     MusicVideo,
     RadioStation
+  },
+  computed: {
+    loading() {
+      return this.$store.state.loading
+    }
+  },
+  created() {
+    this.$store.commit('loadingAM')
   }
 }
 </script>
 
-<style lang="scss" >
+<style lang="scss">
+.hide {
+  display: none;
+}
+.load {
+  width: 100%;
+  height: calc(100vh - 120px);
+  position: absolute;
+}
 .s-title {
   display: flex;
   justify-content: space-between;
@@ -39,9 +64,9 @@ export default {
     line-height: 40px;
     font-weight: 400;
   }
-  > span {
+  > a {
+    color: #999;
     font-size: 12px;
-    cursor: pointer;
   }
 }
 </style>
