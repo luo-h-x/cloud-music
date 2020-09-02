@@ -2,15 +2,15 @@
   <div class="sole">
     <div class="s-title">
       <h3>独家放送</h3>
-      <span><router-link to="/Discover/Sole">更多>></router-link></span>
+      <a href="javascript:;">更多>></a>
     </div>
     <ul class="sole-list">
-      <li class="sole-list-item" v-for="item in soleList" :key="item.id">
+      <li class="sole-list-item" @click="toVideo(item.id)" v-for="item in soleList" :key="item.id">
         <div class="sole-img">
-          <img class="sole-main" :src="item.picUrl" />
+          <img class="sole-main" :src="item.picUrl + '?param=800y295'" />
           <img class="sole-video" src="../../../assets/video.svg" alt="" />
         </div>
-        <a class="sole-title" href="">{{ item.name }}</a>
+        <span class="sole-title" href="">{{ item.name }}</span>
       </li>
     </ul>
   </div>
@@ -25,12 +25,17 @@ export default {
     }
   },
   mounted() {
-    if (sessionStorage.getItem('sole')) {
-      this.soleList = JSON.parse(sessionStorage.getItem('sole'))
-    } else {
-      api.getSole().then(val => {
-        this.soleList = val.data.result
-        sessionStorage.setItem('sole', JSON.stringify(this.soleList))
+    api.getSole().then(val => {
+      this.soleList = val.data.result
+    })
+  },
+  methods: {
+    toVideo(id) {
+      this.$router.push({
+        path: '/Video/Detail',
+        query: {
+          id: id
+        }
       })
     }
   }

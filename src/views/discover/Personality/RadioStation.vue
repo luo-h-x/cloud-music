@@ -2,12 +2,12 @@
   <div class="radiostation">
     <div class="s-title">
       <h3>主播电台</h3>
-      <span><router-link to="/Discover/RadioStation">更多>></router-link></span>
+      <a href="javascript:;">更多>></a>
     </div>
     <ul class="rs-list">
       <li class="rs-list-item" v-for="item in stationList" :key="item.id">
         <div class="rs-content">
-          <img class="rs-img" :src="item.picUrl" />
+          <img class="rs-img" :src="item.picUrl + '?param=200y200'" />
           <div class="rs-describe">
             <span class="rs-d-title">{{ item.name }}</span>
           </div>
@@ -28,15 +28,10 @@ export default {
   },
   mounted() {
     // 获取推荐电台
-    if (sessionStorage.getItem('station')) {
-      this.stationList = JSON.parse(sessionStorage.getItem('station'))
-    } else {
-      api.getStation().then(val => {
-        this.stationList = val.data.result
-        this.stationList.pop()
-        sessionStorage.setItem('station', JSON.stringify(this.stationList))
-      })
-    }
+    api.getStation().then(val => {
+      this.stationList = val.data.result
+      this.stationList.pop()
+    })
   }
 }
 </script>

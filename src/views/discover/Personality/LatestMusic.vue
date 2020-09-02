@@ -2,7 +2,7 @@
   <div class="latestmusic">
     <div class="s-title">
       <h3>最新音乐</h3>
-      <span><router-link to="/Discover/LatestMusic">更多>></router-link></span>
+      <router-link to="/Discover/LatestMusic?type=0">更多>></router-link>
     </div>
     <ul class="lm-list">
       <li
@@ -15,14 +15,23 @@
           <span class="lm-s-number">0{{ index + 1 }}</span>
         </div>
         <!-- 图片 -->
-        <div class="lm-img">
-          <img class="lm-img-main" :src="item.picUrl" />
+        <div class="lm-img" @click="playSong(index)">
+          <img class="lm-img-main" :src="item.picUrl + '?param=60y60'" />
           <img class="lm-img-play" src="../../../assets/play.svg" alt="" />
         </div>
         <!-- 歌曲信息 -->
         <div class="lm-information">
-          <span class="lm-i-title">{{ item.name }}</span>
-          <span class="lm-i-singer">{{ item.song.artists[0].name }}</span>
+          <a
+            href="javascript:;"
+            @dblclick="playSong(index)"
+            class="lm-i-title"
+            >{{ item.name }}</a
+          >
+          <router-link
+            :to="{ path: '/Singer', query: { id: item.song.artists[0].id } }"
+            class="lm-i-singer"
+            >{{ item.song.artists[0].name }}</router-link
+          >
         </div>
       </li>
     </ul>
@@ -38,13 +47,19 @@ export default {
     }
   },
   mounted() {
-    if (sessionStorage.getItem('newsong')) {
-      this.latestList = JSON.parse(sessionStorage.getItem('newsong'))
-    } else {
-      api.getLatest().then(val => {
-        this.latestList = val.data.result
-        sessionStorage.setItem('newsong', JSON.stringify(this.latestList))
+    api.getLatest().then(val => {
+      this.latestList = val.data.result
+    })
+  },
+  methods: {
+    playSong(index) {
+      let data = {}
+      data.currentIndex = index
+      data.ids = this.latestList[0].id
+      this.latestList.forEach(item => {
+        data.ids += ',' + item.id
       })
+      this.$store.dispatch('querySongsA', data)
     }
   }
 }
@@ -59,6 +74,7 @@ export default {
     flex-direction: column;
     border: 1px solid #ccc;
     height: 280px;
+    overflow: hidden;
     .lm-list-item {
       display: flex;
       width: 50%;
@@ -81,6 +97,7 @@ export default {
         position: relative;
         width: 50px;
         height: 50px;
+        cursor: pointer;
         .lm-img-main {
           width: 100%;
           height: 100%;
@@ -101,6 +118,7 @@ export default {
         flex-direction: column;
         margin-left: 3%;
         .lm-i-title {
+          cursor: default;
           line-height: 30px;
         }
         .lm-i-singer {

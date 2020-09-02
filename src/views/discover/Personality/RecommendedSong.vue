@@ -2,17 +2,22 @@
   <div class="recommended-songs">
     <div class="s-title">
       <h3>推荐歌单</h3>
-      <span><router-link to="/Discover/SongList">更多>></router-link></span>
+      <router-link to="/Discover/SongList">更多>></router-link>
     </div>
     <ul class="s-list">
-      <li class="s-list-item" v-for="(item, index) in songList" :key="item.id" @click="toPlayList(item.id)">
+      <li
+        class="s-list-item"
+        v-for="(item, index) in songList"
+        :key="item.id"
+        @click="toPlayList(item.id)"
+      >
         <div class="s-content">
           <div
             class="sc-img"
             @mouseenter="playShow(index)"
             @mouseleave="playHide"
           >
-            <img class="sc-main" :src="item.picUrl" />
+            <img @load="show" class="sc-main" :src="item.picUrl + '?param=400y400'" />
             <img
               class="s-play"
               :class="active === index ? 'sc-show' : ''"
@@ -50,17 +55,12 @@ export default {
   },
   mounted() {
     // 获取歌单
-    if (sessionStorage.getItem('song')) {
-      this.songList = JSON.parse(sessionStorage.getItem('song'))
-    } else {
-      api.getList().then(val => {
-        this.songList = val.data.result
-        this.songList.forEach(item => {
-          item.playCount = utils.countToString(item.playCount)
-        })
-        sessionStorage.setItem('song', JSON.stringify(this.songList))
+    api.getList().then(val => {
+      this.songList = val.data.result
+      this.songList.forEach(item => {
+        item.playCount = utils.countToString(item.playCount)
       })
-    }
+    })
   },
   methods: {
     playShow(index) {
@@ -72,6 +72,9 @@ export default {
     // 跳转歌单详情页
     toPlayList(id) {
       this.$router.push({ path: '/PlayList', query: { id: id } })
+    },
+    show() {
+      this.$store.commit('loadingDM')
     }
   }
 }

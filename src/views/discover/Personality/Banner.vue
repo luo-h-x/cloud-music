@@ -1,8 +1,8 @@
 <template>
   <div class="banner">
-    <el-carousel :interval="4000" type="card" height="200px">
+    <el-carousel :interval="4000" type="card" height="170px">
       <el-carousel-item v-for="(item, index) in banners" :key="index">
-        <img class="banner-imgs" :src="item.imageUrl" />
+        <img @load="show" class="banner-imgs" :src="item.imageUrl + '?param=800y295'" />
       </el-carousel-item>
     </el-carousel>
   </div>
@@ -18,13 +18,13 @@ export default {
   },
   mounted() {
     // 获取轮播图
-    if (sessionStorage.getItem('banners')) {
-      this.banners = JSON.parse(sessionStorage.getItem('banners'))
-    } else {
-      api.getBanner().then(val => {
-        this.banners = val.data.banners
-        sessionStorage.setItem('banners', JSON.stringify(val.data.banners))
-      })
+    api.getBanner().then(val => {
+      this.banners = val.data.banners
+    })
+  },
+  methods: {
+    show() {
+      this.$store.commit('loadingDM')
     }
   }
 }
