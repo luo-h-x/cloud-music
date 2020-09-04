@@ -24,6 +24,7 @@ const routes = [
     component: Layout,
     redirect: '/Discover'
   },
+  // 发现音乐
   {
     path: '/Discover',
     component: Layout,
@@ -212,11 +213,28 @@ const routes = [
         ]
       }
     ]
+  },
+  // 专辑
+  {
+    path: '/Video',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        component: () => import('../views/Video'),
+        meta: { title: '视频', keepAlive: true }
+      },
+      {
+        path: 'Detail',
+        component: () => import('../views/Video/Detail.vue'),
+        meta: { title: '视频详情', keepAlive: false }
+      }
+    ]
   }
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  // mode: 'history',
   routes
 })
 
