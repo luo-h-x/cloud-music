@@ -2,7 +2,7 @@
   <div class="musicvideo">
     <div class="s-title">
       <h3>推荐MV</h3>
-      <span><router-link to="/Discover/MusicVideo">更多>></router-link></span>
+      <a href="javascript:;">更多>></a>
     </div>
     <ul class="mv-list">
       <li class="mv-list-item" v-for="(item, index) in mvList" :key="index">
@@ -11,8 +11,9 @@
           class="mv-img"
           @mouseenter="copywriterShow(index)"
           @mouseleave="copywriterHide"
+          @click="toVideo(item.id)"
         >
-          <img class="mv-main" :src="item.picUrl" />
+          <img class="mv-main" :src="item.picUrl + '?param=800y450'" />
           <div class="mv-info">
             <img class="mv-headset" src="../../../assets/video2.svg" alt="" />
             <span class="mv-count">{{ item.playCount }}</span>
@@ -27,7 +28,11 @@
         <!-- 简介 -->
         <div class="mv-information">
           <a class="mv-i-title">{{ item.name }}</a>
-          <a class="mv-i-singer">{{ item.artistName }}</a>
+          <router-link
+            :to="{ path: '/Singer', query: { id: item.artists[0].id } }"
+            class="mv-i-singer"
+            >{{ item.artistName }}</router-link
+          >
         </div>
       </li>
     </ul>
@@ -45,15 +50,10 @@ export default {
   },
   mounted() {
     // 获取推荐mv
-    if (sessionStorage.getItem('mv')) {
-      this.mvList = JSON.parse(sessionStorage.getItem('mv'))
-    } else {
-      api.getMV().then(val => {
-        this.mvList = val.data.result
-        this.mvList.pop()
-        sessionStorage.setItem('mv', JSON.stringify(this.mvList))
-      })
-    }
+    api.getMV().then(val => {
+      this.mvList = val.data.result
+      this.mvList.pop()
+    })
   },
   methods: {
     copywriterShow(index) {
@@ -61,6 +61,14 @@ export default {
     },
     copywriterHide() {
       this.active = -1
+    },
+    toVideo(id) {
+      this.$router.push({
+        path: '/Video/Detail',
+        query: {
+          id: id
+        }
+      })
     }
   }
 }
@@ -83,6 +91,7 @@ export default {
         overflow: hidden;
         .mv-main {
           width: 100%;
+          object-fit: cover;
           display: block;
         }
         .mv-info {
@@ -125,8 +134,9 @@ export default {
         flex: 1;
         display: flex;
         flex-direction: column;
-        // .mv-i-title {
-        // }
+        .mv-i-title {
+          font-size: 14px;
+        }
         .mv-i-singer {
           color: #897373;
           font-size: 14px;
